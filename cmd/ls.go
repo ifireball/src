@@ -16,8 +16,10 @@ limitations under the License.
 package cmd
 
 import (
-	"fmt"
+	"os"
+	"path"
 
+	"github.com/ifireball/src/lib/ls"
 	"github.com/spf13/cobra"
 )
 
@@ -27,7 +29,19 @@ var lsCmd = &cobra.Command{
 	Short: "List source code repositories",
 	Long:  `List all the source code repositories you have clone into oyur source directory`,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("ls called")
+		home, err := os.UserHomeDir()
+		if err != nil {
+			println(err)
+			return
+		}
+		src := path.Join(home, "src")
+		srcFs := os.DirFS(src)
+		repos, err := ls.Repos(srcFs)
+		if err != nil {
+			println(err)
+			return
+		}
+		ls.Print(repos)
 	},
 }
 
