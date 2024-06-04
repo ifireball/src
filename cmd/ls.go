@@ -27,7 +27,7 @@ import (
 var lsCmd = &cobra.Command{
 	Use:   "ls",
 	Short: "List source code repositories",
-	Long:  `List all the source code repositories you have clone into oyur source directory`,
+	Long:  `List all the source code repositories you have clone into your source directory`,
 	Run: func(cmd *cobra.Command, args []string) {
 		home, err := os.UserHomeDir()
 		if err != nil {
@@ -35,10 +35,10 @@ var lsCmd = &cobra.Command{
 			return
 		}
 		src := path.Join(home, "src")
-		srcFs := os.DirFS(src)
-		repos, err := ls.Repos(srcFs)
+		srcFs := os.DirFS("/")
+		repos, err := ls.Repos(srcFs, src)
 		if err != nil {
-			println(err)
+			println(err.Error())
 			return
 		}
 		ls.Print(repos)
