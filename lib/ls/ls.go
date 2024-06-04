@@ -2,15 +2,12 @@ package ls
 
 import (
 	"io/fs"
-	"time"
-
-	"github.com/go-git/go-git/v5"
 	"github.com/ifireball/src/lib/chu"
 )
 
 type Repo struct {
 	Path string
-	LastCommitTime time.Time
+	RepoGitData
 }
 
 func Repos(srcFs fs.FS, srcPath string) (<-chan Repo, error) {
@@ -19,20 +16,11 @@ func Repos(srcFs fs.FS, srcPath string) (<-chan Repo, error) {
 		return nil, err
 	}
 	repos := chu.Map(paths, func(path string) (Repo, bool) {
-		gitRepo, err := git.PlainOpen(path)
+		rgd, err := getRepoGitData(path)
 		if err != nil {
 			return Repo{}, false
 		}
-		logIter, err := gitRepo.Log(&git.LogOptions{Order: git.LogOrderCommitterTime, All: true})
-		if err != nil {
-			return Repo{}, false
-		}
-		lastCommit, err := logIter.Next()
-		logIter.Close()
-		if err != nil {
-			return Repo{}, false
-		}
-		return Repo{Path: path, LastCommitTime: lastCommit.Committer.When}, true
+		return Repo{Path: path, RepoGitData: rgd}, true
 	})
 	return repos, nil
 }
