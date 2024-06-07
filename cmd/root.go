@@ -19,6 +19,7 @@ import (
 	"fmt"
 	"os"
 	"path"
+	"time"
 
 	"github.com/adrg/xdg"
 	"github.com/spf13/cobra"
@@ -33,9 +34,6 @@ var rootCmd = &cobra.Command{
 	Short: "A brief description of your application",
 	Long: `"src" is a tool for managing source code directories with sources
 that belong to many different projects.`,
-	// Uncomment the following line if your bare application
-	// has an action associated with it:
-	// Run: func(cmd *cobra.Command, args []string) { },
 }
 
 // Execute adds all child commands to the root command and sets flags appropriately.
@@ -50,15 +48,18 @@ func Execute() {
 func init() {
 	cobra.OnInitialize(initConfig)
 
-	// Here you will define your flags and configuration settings.
-	// Cobra supports persistent flags, which, if defined here,
-	// will be global for your application.
-
 	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $XDG_CONFIG_HOME/src/src.toml)")
 
-	// Cobra also supports local flags, which will only run
-	// when this action is called directly.
-	rootCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	defaultPruneThreshold := time.Hour * 24 * 30 * 6
+	rootCmd.PersistentFlags().Duration(
+		"prune-threshold",
+		defaultPruneThreshold,
+		"A time duration to use as a pruning threshold. Repos that we last\n" +
+		"committed to more then the threshold time ago are considered to be\n" +
+		"'old' and may be pruned",
+	)
+	viper.SetDefault("prune-threshold", defaultPruneThreshold)
+	viper.BindPFlag("prune-threshold", rootCmd.PersistentFlags().Lookup("prune-threshold"))
 }
 
 // initConfig reads in config file and ENV variables if set.

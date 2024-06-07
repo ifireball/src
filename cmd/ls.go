@@ -18,9 +18,12 @@ package cmd
 import (
 	"os"
 	"path"
+	"time"
 
+	"github.com/ifireball/src/lib/chu"
 	"github.com/ifireball/src/lib/ls"
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 )
 
 // lsCmd represents the ls command
@@ -30,16 +33,23 @@ var lsCmd = &cobra.Command{
 	Long:  `List all the source code repositories you have clone into your source directory`,
 	Run: func(cmd *cobra.Command, args []string) {
 		home, err := os.UserHomeDir()
-		if err != nil {
-			println(err)
-			return
-		}
+		cobra.CheckErr(err)
 		src := path.Join(home, "src")
 		srcFs := os.DirFS("/")
 		repos, err := ls.Repos(srcFs, src)
-		if err != nil {
-			println(err.Error())
-			return
+		cobra.CheckErr(err)
+		new, err := cmd.Flags().GetBool("new")
+		cobra.CheckErr(err)
+		old, err := cmd.Flags().GetBool("old")
+		pruneThreshold := viper.GetDuration("prune-threshold")
+		if new {
+			repos = chu.Filter(repos, func(r ls.Repo) bool {
+				return time.Since(r.LastCommitTime) <= pruneThreshold
+			})
+		} else if old {
+			repos = chu.Filter(repos, func(r ls.Repo) bool {
+				return time.Since(r.LastCommitTime) > pruneThreshold
+			})
 		}
 		ls.Print(repos)
 	},
@@ -48,13 +58,7 @@ var lsCmd = &cobra.Command{
 func init() {
 	rootCmd.AddCommand(lsCmd)
 
-	// Here you will define your flags and configuration settings.
-
-	// Cobra supports Persistent Flags which will work for this command
-	// and all subcommands, e.g.:
-	// lsCmd.PersistentFlags().String("foo", "", "A help for foo")
-
-	// Cobra supports local flags which will only run when this command
-	// is called directly, e.g.:
-	// lsCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	lsCmd.Flags().BoolP("old", "o", false, "Only show older repos")
+	lsCmd.Flags().BoolP("new", "n", false, "Only show newer repos")
+	lsCmd.MarkFlagsMutuallyExclusive("old", "new")
 }
