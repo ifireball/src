@@ -41,6 +41,7 @@ var lsCmd = &cobra.Command{
 		new, err := cmd.Flags().GetBool("new")
 		cobra.CheckErr(err)
 		old, err := cmd.Flags().GetBool("old")
+		cobra.CheckErr(err)
 		pruneThreshold := viper.GetDuration("prune-threshold")
 		if new {
 			repos = chu.Filter(repos, func(r ls.Repo) bool {
@@ -51,7 +52,9 @@ var lsCmd = &cobra.Command{
 				return time.Since(r.LastCommitTime) > pruneThreshold
 			})
 		}
-		ls.Print(repos)
+		showRemote, err := cmd.Flags().GetBool("remote")
+		cobra.CheckErr(err)
+		ls.Print(repos, showRemote)
 	},
 }
 
@@ -61,4 +64,6 @@ func init() {
 	lsCmd.Flags().BoolP("old", "o", false, "Only show older repos")
 	lsCmd.Flags().BoolP("new", "n", false, "Only show newer repos")
 	lsCmd.MarkFlagsMutuallyExclusive("old", "new")
+
+	lsCmd.Flags().Bool("remote", false, "Show the remote URL for repos")
 }

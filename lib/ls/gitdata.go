@@ -8,6 +8,7 @@ import (
 
 type RepoGitData struct {
 	LastCommitTime time.Time
+	MainRemoteURL string
 }
 
 func getRepoGitData(path string) (RepoGitData, error) {
@@ -16,7 +17,14 @@ func getRepoGitData(path string) (RepoGitData, error) {
 		return RepoGitData{}, err
 	}
 	lct, err := getLastCommitTime(gitRepo)
-	return RepoGitData{LastCommitTime: lct}, nil
+	if err != nil {
+		return RepoGitData{}, err
+	}
+	mru, err := getMainRemoteURL(gitRepo)
+	if err != nil {
+		return RepoGitData{}, err
+	}
+	return RepoGitData{LastCommitTime: lct, MainRemoteURL: mru}, nil
 }
 
 func getLastCommitTime(gitRepo *git.Repository) (time.Time, error) {
@@ -30,4 +38,32 @@ func getLastCommitTime(gitRepo *git.Repository) (time.Time, error) {
 		return time.Time{}, err
 	}
 	return lastCommit.Committer.When, nil
+}
+
+func getMainRemoteURL(gitRepo *git.Repository) (string, error) {
+	remotes, err := gitRepo.Remotes()
+	if err != nil {
+		return "" ,err
+	}
+	mainRemoteURL := ""
+	urlRemoteName := ""
+	for _, remote := range remotes {
+		config := remote.Config()
+		if len(config.URLs) <= 0 {
+			continue
+		}
+		// Prefer the "upstream" remote most strongly, but use the first remote
+		// we find otherwise
+		if mainRemoteURL == "" || config.Name == "upstream" {
+			mainRemoteURL = config.URLs[0]
+			urlRemoteName = config.Name
+			continue
+		}
+		// Prefer the "origin" remote to other remotes besides "upstream"
+		if config.Name == "origin" && urlRemoteName != "upstream" {
+			mainRemoteURL = config.URLs[0]
+			urlRemoteName = config.Name
+		}
+	}
+	return mainRemoteURL, nil
 }
