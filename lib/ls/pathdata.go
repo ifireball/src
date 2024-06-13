@@ -1,6 +1,8 @@
 package ls
 
-import "strings"
+import (
+	"strings"
+)
 
 
 type RepoPathData struct {
@@ -23,4 +25,14 @@ func getRepoPathData(srcPath, repo string) RepoPathData {
 	}
 	name = repo[lastI+1:]
 	return RepoPathData{Host: host, Org: org, Name: name}
+}
+
+func (rpd *RepoPathData) ShortPath() string {
+	if rpd.Host != "" {
+		if rpd.Org != "" {
+			return strings.Join([]string{rpd.Host, rpd.Org, rpd.Name}, "/")
+		}
+		return strings.Join([]string{rpd.Host, rpd.Name}, "/")
+	}
+	return rpd.Name
 }

@@ -64,18 +64,11 @@ func init() {
 
 // initConfig reads in config file and ENV variables if set.
 func initConfig() {
-	if cfgFile != "" {
-		// Use config file from the flag.
-		viper.SetConfigFile(cfgFile)
-	} else {
-		// Find home directory.
-		configHome := path.Join(xdg.ConfigHome, "src")
-
-		// Search config in home directory with name ".src" (without extension).
-		viper.AddConfigPath(configHome)
-		viper.SetConfigType("toml")
-		viper.SetConfigName("src")
+	if cfgFile == "" {
+		cfgFile = path.Join(xdg.ConfigHome, "src", "src.toml")
 	}
+
+	viper.SetConfigFile(cfgFile)
 
 	viper.AutomaticEnv() // read in environment variables that match
 
