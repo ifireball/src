@@ -5,16 +5,25 @@ import (
 	"strings"
 
 	"github.com/go-git/go-git/v5/config"
+	"github.com/ifireball/src/lib/taxonomy"
 	"github.com/spf13/viper"
 )
 
 type StorableRepo interface {
 	ShortPath() string
 	Config() *config.Config
+	Branches() []taxonomy.Branch
+	Head() string
+}
+
+type branchConfig struct {
+	Hash, Name string
 }
 
 type repoConfig struct {
 	Path, Config string
+	Branches []*branchConfig
+	Head string
 }
 
 func Store[T StorableRepo](repos <-chan T, v *viper.Viper) error {
@@ -27,6 +36,8 @@ func Store[T StorableRepo](repos <-chan T, v *viper.Viper) error {
 		repoConfigs = append(repoConfigs, repoConfig{
 			Path: repo.ShortPath(),
 			Config: string(cfg),
+			Branches: storeBranches(repo.Branches()),
+			Head: repo.Head(),
 		})
 	}
 	slices.SortFunc(repoConfigs, func(a, b repoConfig) int {
@@ -34,4 +45,14 @@ func Store[T StorableRepo](repos <-chan T, v *viper.Viper) error {
 	})
 	v.Set("repositories", repoConfigs)
 	return nil
+}
+
+func storeBranches(branches []taxonomy.Branch) (branchConfigs []*branchConfig) {
+	for _, branch := range branches {
+		branchConfigs = append(branchConfigs, &branchConfig{
+			Hash: branch.Hash().String(),
+			Name: branch.Name().String(),
+		})
+	}
+	return
 }
