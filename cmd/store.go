@@ -38,7 +38,7 @@ specified into the configuration file.`,
 		srcFs := os.DirFS("/")
 		repos, err := ls.Repos(srcFs, src)
 		cobra.CheckErr(err)
-		config.Store(repos, viper.GetViper())
+		cobra.CheckErr(config.Store(repos, viper.GetViper()))
 		configFile := viper.ConfigFileUsed()
 		cobra.CheckErr(viper.WriteConfigAs(configFile))
 	},

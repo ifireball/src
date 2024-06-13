@@ -14,20 +14,24 @@ type StorableRepo interface {
 }
 
 type repoConfig struct {
-	Path string
-	Config *config.Config
+	Path, Config string
 }
 
-func Store[T StorableRepo](repos <-chan T, v *viper.Viper) {
+func Store[T StorableRepo](repos <-chan T, v *viper.Viper) error {
 	var repoConfigs []repoConfig
 	for repo := range repos {
+		cfg, err := repo.Config().Marshal()
+		if err != nil {
+			return err
+		}
 		repoConfigs = append(repoConfigs, repoConfig{
 			Path: repo.ShortPath(),
-			Config: repo.Config(),
+			Config: string(cfg),
 		})
 	}
 	slices.SortFunc(repoConfigs, func(a, b repoConfig) int {
 		return strings.Compare(a.Path, b.Path)
 	})
 	v.Set("repositories", repoConfigs)
+	return nil
 }
