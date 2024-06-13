@@ -65,7 +65,7 @@ func init() {
 // initConfig reads in config file and ENV variables if set.
 func initConfig() {
 	if cfgFile == "" {
-		cfgFile = path.Join(xdg.ConfigHome, "src", "src.toml")
+		cfgFile = path.Join(xdg.ConfigHome, "src", "src.yaml")
 	}
 
 	viper.SetConfigFile(cfgFile)

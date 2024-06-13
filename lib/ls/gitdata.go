@@ -4,16 +4,19 @@ import (
 	"time"
 
 	"github.com/go-git/go-git/v5"
+	"github.com/go-git/go-git/v5/config"
 )
 
 type RepoGitData interface {
 	LastCommitTime() time.Time
 	MainRemoteURL() string
+	Config() *config.Config
 }
 
 type repoGitDataImpl struct {
 	lastCommitTime time.Time
 	mainRemoteURL string
+	config *config.Config
 }
 
 func (rgd *repoGitDataImpl) LastCommitTime() time.Time {
@@ -22,6 +25,10 @@ func (rgd *repoGitDataImpl) LastCommitTime() time.Time {
 
 func (rgd *repoGitDataImpl) MainRemoteURL() string {
 	return rgd.mainRemoteURL
+}
+
+func (rgd *repoGitDataImpl) Config() *config.Config {
+	return rgd.config
 }
 
 func getRepoGitData(path string) (*repoGitDataImpl, error) {
@@ -37,7 +44,15 @@ func getRepoGitData(path string) (*repoGitDataImpl, error) {
 	if err != nil {
 		return nil, err
 	}
-	return &repoGitDataImpl{lastCommitTime: lct, mainRemoteURL: mru}, nil
+	cfg, err := gitRepo.Config()
+	if err != nil {
+		return nil, err
+	}
+	return &repoGitDataImpl{
+		lastCommitTime: lct,
+		mainRemoteURL: mru,
+		config: cfg,
+	}, nil
 }
 
 func getLastCommitTime(gitRepo *git.Repository) (time.Time, error) {

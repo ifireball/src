@@ -4,16 +4,18 @@ import (
 	"slices"
 	"strings"
 
+	"github.com/go-git/go-git/v5/config"
 	"github.com/spf13/viper"
 )
 
 type StorableRepo interface {
 	ShortPath() string
-	MainRemoteURL() string
+	Config() *config.Config
 }
 
 type repoConfig struct {
-	Path, RemoteURL string
+	Path string
+	Config *config.Config
 }
 
 func Store[T StorableRepo](repos <-chan T, v *viper.Viper) {
@@ -21,7 +23,7 @@ func Store[T StorableRepo](repos <-chan T, v *viper.Viper) {
 	for repo := range repos {
 		repoConfigs = append(repoConfigs, repoConfig{
 			Path: repo.ShortPath(),
-			RemoteURL: repo.MainRemoteURL(),
+			Config: repo.Config(),
 		})
 	}
 	slices.SortFunc(repoConfigs, func(a, b repoConfig) int {
