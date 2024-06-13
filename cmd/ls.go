@@ -22,6 +22,7 @@ import (
 
 	"github.com/ifireball/src/lib/chu"
 	"github.com/ifireball/src/lib/ls"
+	"github.com/ifireball/src/lib/out"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
 )
@@ -45,16 +46,16 @@ var lsCmd = &cobra.Command{
 		pruneThreshold := viper.GetDuration("prune-threshold")
 		if new {
 			repos = chu.Filter(repos, func(r ls.Repo) bool {
-				return time.Since(r.LastCommitTime) <= pruneThreshold
+				return time.Since(r.LastCommitTime()) <= pruneThreshold
 			})
 		} else if old {
 			repos = chu.Filter(repos, func(r ls.Repo) bool {
-				return time.Since(r.LastCommitTime) > pruneThreshold
+				return time.Since(r.LastCommitTime()) > pruneThreshold
 			})
 		}
 		showRemote, err := cmd.Flags().GetBool("remote")
 		cobra.CheckErr(err)
-		ls.Print(repos, showRemote)
+		out.Print(repos, showRemote)
 	},
 }
 

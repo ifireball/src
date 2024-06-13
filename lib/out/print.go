@@ -1,23 +1,30 @@
-package ls
+package out
 
 import (
 	"fmt"
 	"slices"
 	"strings"
+	"time"
 )
 
 type tableRow struct{name, since, remote string}
 
-func Print(repos <-chan Repo, showRemote bool) {
+type PrintableRepo interface {
+	ShortPath() string
+	LastCommitTime() time.Time
+	MainRemoteURL() string
+}
+
+func Print[T PrintableRepo](repos <-chan T, showRemote bool) {
 	var table []tableRow
 	nameWidth := 0
 	for repo := range repos {
-		name := fmt.Sprintf("%s/%s/%s", repo.Host, repo.Org, repo.Name)
+		name := repo.ShortPath()
 		nameWidth = max(nameWidth, len(name))
 		table = append(table, tableRow{
 			name,
-			repo.LastCommitTime.Format("Mon, Jan _2 2006"),
-			repo.MainRemoteURL,
+			repo.LastCommitTime().Format("Mon, Jan _2 2006"),
+			repo.MainRemoteURL(),
 		})
 	}
 	slices.SortFunc(table, func(a, b tableRow) int {

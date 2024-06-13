@@ -5,10 +5,15 @@ import (
 	"github.com/ifireball/src/lib/chu"
 )
 
-type Repo struct {
-	Path string
+type Repo interface {
 	RepoPathData
 	RepoGitData
+}
+
+type repoImpl struct {
+	Path string
+	repoPathDataImpl
+	repoGitDataImpl
 }
 
 func Repos(srcFs fs.FS, srcPath string) (<-chan Repo, error) {
@@ -20,9 +25,9 @@ func Repos(srcFs fs.FS, srcPath string) (<-chan Repo, error) {
 		rpd := getRepoPathData(srcPath, path)
 		rgd, err := getRepoGitData(path)
 		if err != nil {
-			return Repo{}, false
+			return nil, false
 		}
-		return Repo{Path: path, RepoPathData: rpd, RepoGitData: rgd}, true
+		return &repoImpl{Path: path, repoPathDataImpl: *rpd, repoGitDataImpl: *rgd}, true
 	})
 	return repos, nil
 }

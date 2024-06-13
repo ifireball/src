@@ -6,25 +6,38 @@ import (
 	"github.com/go-git/go-git/v5"
 )
 
-type RepoGitData struct {
-	LastCommitTime time.Time
-	MainRemoteURL string
+type RepoGitData interface {
+	LastCommitTime() time.Time
+	MainRemoteURL() string
 }
 
-func getRepoGitData(path string) (RepoGitData, error) {
+type repoGitDataImpl struct {
+	lastCommitTime time.Time
+	mainRemoteURL string
+}
+
+func (rgd *repoGitDataImpl) LastCommitTime() time.Time {
+	return rgd.lastCommitTime
+}
+
+func (rgd *repoGitDataImpl) MainRemoteURL() string {
+	return rgd.mainRemoteURL
+}
+
+func getRepoGitData(path string) (*repoGitDataImpl, error) {
 	gitRepo, err := git.PlainOpen(path)
 	if err != nil {
-		return RepoGitData{}, err
+		return nil, err
 	}
 	lct, err := getLastCommitTime(gitRepo)
 	if err != nil {
-		return RepoGitData{}, err
+		return nil, err
 	}
 	mru, err := getMainRemoteURL(gitRepo)
 	if err != nil {
-		return RepoGitData{}, err
+		return nil, err
 	}
-	return RepoGitData{LastCommitTime: lct, MainRemoteURL: mru}, nil
+	return &repoGitDataImpl{lastCommitTime: lct, mainRemoteURL: mru}, nil
 }
 
 func getLastCommitTime(gitRepo *git.Repository) (time.Time, error) {

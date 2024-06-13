@@ -4,12 +4,15 @@ import (
 	"strings"
 )
 
-
-type RepoPathData struct {
-	Host, Org, Name string
+type RepoPathData interface {
+	ShortPath() string
 }
 
-func getRepoPathData(srcPath, repo string) RepoPathData {
+type repoPathDataImpl struct {
+	host, org, name string
+}
+
+func getRepoPathData(srcPath, repo string) *repoPathDataImpl {
 	repo = strings.TrimPrefix(repo, srcPath)
 	repo = strings.TrimPrefix(repo, "/")
 	repo = strings.TrimSuffix(repo, "/")
@@ -24,15 +27,15 @@ func getRepoPathData(srcPath, repo string) RepoPathData {
 		org = repo[firstI+1:lastI]
 	}
 	name = repo[lastI+1:]
-	return RepoPathData{Host: host, Org: org, Name: name}
+	return &repoPathDataImpl{host: host, org: org, name: name}
 }
 
-func (rpd *RepoPathData) ShortPath() string {
-	if rpd.Host != "" {
-		if rpd.Org != "" {
-			return strings.Join([]string{rpd.Host, rpd.Org, rpd.Name}, "/")
+func (rpd *repoPathDataImpl) ShortPath() string {
+	if rpd.host != "" {
+		if rpd.org != "" {
+			return strings.Join([]string{rpd.host, rpd.org, rpd.name}, "/")
 		}
-		return strings.Join([]string{rpd.Host, rpd.Name}, "/")
+		return strings.Join([]string{rpd.host, rpd.name}, "/")
 	}
-	return rpd.Name
+	return rpd.name
 }

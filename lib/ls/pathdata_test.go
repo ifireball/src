@@ -9,7 +9,7 @@ var _ = Describe("getRepoPathData", func() {
 	srcPath := "/path/to/src"
 	DescribeTable("Extracts repo host, org and name from path",
 		func(repo, expHost, expOrg, expName string) {
-			expected := RepoPathData{Host: expHost, Org: expOrg, Name: expName}
+			expected := &repoPathDataImpl{host: expHost, org: expOrg, name: expName}
 			Expect(getRepoPathData(srcPath, repo)).To(Equal(expected))
 		},
 		EntryDescription("%[1]s"),

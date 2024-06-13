@@ -4,20 +4,24 @@ import (
 	"slices"
 	"strings"
 
-	"github.com/ifireball/src/lib/ls"
 	"github.com/spf13/viper"
 )
+
+type StorableRepo interface {
+	ShortPath() string
+	MainRemoteURL() string
+}
 
 type repoConfig struct {
 	Path, RemoteURL string
 }
 
-func Store(repos <-chan ls.Repo, v *viper.Viper) {
+func Store[T StorableRepo](repos <-chan T, v *viper.Viper) {
 	var repoConfigs []repoConfig
 	for repo := range repos {
 		repoConfigs = append(repoConfigs, repoConfig{
 			Path: repo.ShortPath(),
-			RemoteURL: repo.MainRemoteURL,
+			RemoteURL: repo.MainRemoteURL(),
 		})
 	}
 	slices.SortFunc(repoConfigs, func(a, b repoConfig) int {
