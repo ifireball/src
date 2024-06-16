@@ -1,17 +1,24 @@
 package config
 
-import "github.com/ifireball/src/lib/taxonomy"
+import (
+	"github.com/go-git/go-git/v5/config"
+	"github.com/go-git/go-git/v5/plumbing"
+
+	"github.com/ifireball/src/lib/taxonomy"
+)
 
 // A branch representation that marshals nicely
 type branchConfig struct {
-	Hash, Name string
+	HashStr string `mapstructure:"hash"`
+	NameStr string `mapstructure:"name"`
 }
 
 // A repo representation that marshals nicely
 type repoConfig struct {
-	Path, Config string
-	Branches []*branchConfig
-	Head string
+	PathData string            `mapstructure:"path"`
+	ConfigData string          `mapstructure:"config"`
+	BranchData []*branchConfig `mapstructure:"branches"`
+	HeadRef string             `mapstructure:"head"`
 }
 
 func repoConfigFromStorable(repo StorableRepo) (*repoConfig, error) {
@@ -20,10 +27,10 @@ func repoConfigFromStorable(repo StorableRepo) (*repoConfig, error) {
 		return nil, err
 	}
 	config := repoConfig{
-		Path: repo.ShortPath(),
-		Config: string(cfg),
-		Branches: storeBranches(repo.Branches()),
-		Head: repo.Head(),
+		PathData: repo.ShortPath(),
+		ConfigData: string(cfg),
+		BranchData: storeBranches(repo.Branches()),
+		HeadRef: repo.Head(),
 	}
 	return &config, nil
 }
@@ -31,9 +38,37 @@ func repoConfigFromStorable(repo StorableRepo) (*repoConfig, error) {
 func storeBranches(branches []taxonomy.Branch) (branchConfigs []*branchConfig) {
 	for _, branch := range branches {
 		branchConfigs = append(branchConfigs, &branchConfig{
-			Hash: branch.Hash().String(),
-			Name: branch.Name().String(),
+			HashStr: branch.Hash().String(),
+			NameStr: branch.Name().String(),
 		})
 	}
 	return
+}
+
+func (r *repoConfig) ShortPath() string {
+	return r.PathData
+}
+
+func (r* repoConfig) Config() *config.Config {
+	cfg := config.NewConfig()
+	cfg.Unmarshal([]byte(r.ConfigData))
+	return cfg
+}
+
+func (r *repoConfig) Branches() []taxonomy.Branch {
+	out := make([]taxonomy.Branch, len(r.BranchData))
+	for i, branch := range r.BranchData {
+		out[i] = branch
+	}
+	return out
+}
+
+func (r *repoConfig) Head() string { return r.HeadRef }
+
+func (b *branchConfig) Hash() plumbing.Hash {
+	return plumbing.NewHash(b.HashStr)
+}
+
+func (b *branchConfig) Name() plumbing.ReferenceName {
+	return plumbing.ReferenceName(b.NameStr)
 }

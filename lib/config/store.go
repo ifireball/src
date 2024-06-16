@@ -4,6 +4,7 @@ import (
 	"slices"
 	"strings"
 
+	"github.com/mitchellh/mapstructure"
 	"github.com/spf13/viper"
 )
 
@@ -17,8 +18,10 @@ func Store[T StorableRepo](repos <-chan T, v *viper.Viper) error {
 		repoConfigs = append(repoConfigs, *cfg)
 	}
 	slices.SortFunc(repoConfigs, func(a, b repoConfig) int {
-		return strings.Compare(a.Path, b.Path)
+		return strings.Compare(a.ShortPath(), b.ShortPath())
 	})
-	v.Set("repositories", repoConfigs)
+	var repoStruct []map[string]any
+	mapstructure.Decode(repoConfigs, repoStruct)
+	v.Set("repositories", repoStruct)
 	return nil
 }
