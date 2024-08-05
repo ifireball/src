@@ -21,7 +21,12 @@ func repoPaths(srcFs fs.FS, srcPath string) (<-chan string, error) {
 			srcPath = srcPath[1:]
 		}
 		fs.WalkDir(srcFs, srcPath, func(repoPath string, d fs.DirEntry, err error) error {
-			defer func() { if firstCall { close(erc); firstCall = false } }()
+			defer func() {
+				if firstCall {
+					close(erc)
+					firstCall = false
+				}
+			}()
 			if err != nil {
 				if d != nil {
 					// Reading some nested directory failed, just skip it
@@ -46,7 +51,7 @@ func repoPaths(srcFs fs.FS, srcPath string) (<-chan string, error) {
 		})
 	}()
 
-	if err, ok := <- erc; ok {
+	if err, ok := <-erc; ok {
 		return nil, err
 	}
 	return out, nil

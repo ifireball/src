@@ -20,10 +20,10 @@ type RepoGitData interface {
 
 type repoGitDataImpl struct {
 	lastCommitTime time.Time
-	mainRemoteURL string
-	config *config.Config
-	branches []taxonomy.Branch
-	head string
+	mainRemoteURL  string
+	config         *config.Config
+	branches       []taxonomy.Branch
+	head           string
 }
 
 func (rgd *repoGitDataImpl) LastCommitTime() time.Time {
@@ -73,10 +73,10 @@ func getRepoGitData(path string) (*repoGitDataImpl, error) {
 	}
 	return &repoGitDataImpl{
 		lastCommitTime: lct,
-		mainRemoteURL: mru,
-		config: cfg,
-		branches: branches,
-		head: head.Strings()[1],
+		mainRemoteURL:  mru,
+		config:         cfg,
+		branches:       branches,
+		head:           head.Strings()[1],
 	}, nil
 }
 
@@ -96,7 +96,7 @@ func getLastCommitTime(gitRepo *git.Repository) (time.Time, error) {
 func getMainRemoteURL(gitRepo *git.Repository) (string, error) {
 	remotes, err := gitRepo.Remotes()
 	if err != nil {
-		return "" ,err
+		return "", err
 	}
 	mainRemoteURL := ""
 	urlRemoteName := ""

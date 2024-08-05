@@ -24,7 +24,7 @@ func getRepoPathData(srcPath, repo string) *repoPathDataImpl {
 		host = repo[:firstI]
 	}
 	if firstI < lastI {
-		org = repo[firstI+1:lastI]
+		org = repo[firstI+1 : lastI]
 	}
 	name = repo[lastI+1:]
 	return &repoPathDataImpl{host: host, org: org, name: name}

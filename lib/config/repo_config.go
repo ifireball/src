@@ -10,8 +10,8 @@ type branchConfig struct {
 // A repo representation that marshals nicely
 type repoConfig struct {
 	Path, Config string
-	Branches []*branchConfig
-	Head string
+	Branches     []*branchConfig
+	Head         string
 }
 
 func repoConfigFromStorable(repo StorableRepo) (*repoConfig, error) {
@@ -20,10 +20,10 @@ func repoConfigFromStorable(repo StorableRepo) (*repoConfig, error) {
 		return nil, err
 	}
 	config := repoConfig{
-		Path: repo.ShortPath(),
-		Config: string(cfg),
+		Path:     repo.ShortPath(),
+		Config:   string(cfg),
 		Branches: storeBranches(repo.Branches()),
-		Head: repo.Head(),
+		Head:     repo.Head(),
 	}
 	return &config, nil
 }

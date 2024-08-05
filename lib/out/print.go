@@ -7,7 +7,7 @@ import (
 	"time"
 )
 
-type tableRow struct{name, since, remote string}
+type tableRow struct{ name, since, remote string }
 
 type PrintableRepo interface {
 	ShortPath() string

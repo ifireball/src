@@ -54,9 +54,9 @@ func init() {
 	rootCmd.PersistentFlags().Duration(
 		"prune-threshold",
 		defaultPruneThreshold,
-		"A time duration to use as a pruning threshold. Repos that we last\n" +
-		"committed to more then the threshold time ago are considered to be\n" +
-		"'old' and may be pruned",
+		"A time duration to use as a pruning threshold. Repos that we last\n"+
+			"committed to more then the threshold time ago are considered to be\n"+
+			"'old' and may be pruned",
 	)
 	viper.SetDefault("prune-threshold", defaultPruneThreshold)
 	viper.BindPFlag("prune-threshold", rootCmd.PersistentFlags().Lookup("prune-threshold"))

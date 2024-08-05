@@ -1,8 +1,8 @@
 package ls
 
 import (
-	"io/fs"
 	"github.com/ifireball/src/lib/chu"
+	"io/fs"
 )
 
 type Repo interface {
